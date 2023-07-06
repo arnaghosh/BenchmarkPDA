@@ -36,8 +36,15 @@ parser.add_argument('--target_domain', type=str,
 parser.add_argument('--seed', type=int, 
                     default=2020,
                     help="Choice of seed")
+parser.add_argument('--sweep_idx', type=int, 
+                    default=0,
+                    help="Index of hparam sweep")
 
 args = parser.parse_args()
+# Adding SCRATCH dir to data and logs folder
+scratch_dir = os.path.join(os.environ['SCRATCH'],'DomainAdaptation')
+args.data_folder = os.path.join(scratch_dir, args.data_folder)
+args.logs_folder = os.path.join(scratch_dir, args.logs_folder)
 
 dset_hp, domains = get_dset_hp(args.dset, args.data_folder)
 dset_hp['use_val'] = True
@@ -64,7 +71,8 @@ search_space = get_search_space(args.method)
 
 train_hp = get_train_hp_search(args.method, dset_hp)
 train_hp['seed'] = args.seed
-for hp_params in itertools.product(*[iter(search_space[key]) for key in search_space.keys()]):
+for hidx, hp_params in enumerate(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])):
+    if hidx != args.sweep_idx: continue # running one hparam at a time :)
     if args.method == 'ar':
         if hp_params[1] != -hp_params[2]: # restricts up == -low
             continue
@@ -82,9 +90,12 @@ for hp_params in itertools.product(*[iter(search_space[key]) for key in search_s
     
     # Train with specified hyper-parameters
     if not os.path.exists(logger_hp['output_dir']):
+        print(f"Running hparam config {args.sweep_idx}")
         os.makedirs(logger_hp['output_dir'], exist_ok=True)
         algorithm = algorithms_dict[args.method](dset_hp, loss_hp, train_hp, net_hp, logger_hp)
         train(algorithm)
+    else:
+        print(f"Skipping hparam config {args.sweep_idx} because dir already exists")
     # if os.path.exists(logger_hp['output_dir']):
     #     print("WARNING!! OVERWRITING EXISTING LOGS!!")
     # os.makedirs(logger_hp['output_dir'], exist_ok=True)
