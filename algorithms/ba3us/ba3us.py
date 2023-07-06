@@ -71,8 +71,10 @@ class BA3US(Algorithm):
         """
         self.base_network.train(True)
         self.ad_net.train(True)
-        xs, ys = self.iter_source.next()
-        xt, _ = self.iter_target.next()
+        # xs, ys = self.iter_source.next()
+        # xt, _ = self.iter_target.next()
+        xs, ys = next(self.iter_source)
+        xt, _ = next(self.iter_target)
         xs, xt, ys = xs.cuda(), xt.cuda(), ys.cuda()
         if self.class_weight is not None and self.loss_hp['weight_cls'] and self.class_weight[ys].sum() == 0:
             total_loss = torch.tensor(0.0)
@@ -82,7 +84,8 @@ class BA3US(Algorithm):
             features_target, outputs_target = self.base_network(xt)
 
             if self.dset_loaders['middle'] is not None:
-                inputs_middle, labels_middle = self.iter_middle.next()
+                # inputs_middle, labels_middle = self.iter_middle.next()
+                inputs_middle, labels_middle = next(self.iter_middle)
                 features_middle, outputs_middle = self.base_network(inputs_middle.cuda())
                 features = torch.cat((features_source, features_target, features_middle), dim=0)
                 outputs = torch.cat((outputs_source, outputs_target, outputs_middle), dim=0)

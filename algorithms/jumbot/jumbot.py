@@ -44,8 +44,10 @@ class Jumbot(Algorithm):
 
     def update(self, i):
         self.base_network.train(True)
-        xs, ys = self.iter_source.next()
-        xt, _ = self.iter_target.next()
+        # xs, ys = self.iter_source.next()
+        # xt, _ = self.iter_target.next()
+        xs, ys = next(self.iter_source)
+        xt, _ = next(self.iter_target)
         xs, xt, ys = xs.cuda(), xt.cuda(), ys.cuda()
 
         g_xs, f_g_xs = self.base_network(xs)

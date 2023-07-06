@@ -169,8 +169,10 @@ class Ar(Algorithm):
         Computes the loss and performs one update step.
         """
         self.base_network.train(True)
-        xs, ys, ids_source = self.iter_source.next()
-        xt, _, _ = self.iter_target.next()
+        # xs, ys, ids_source = self.iter_source.next()
+        # xt, _, _ = self.iter_target.next()
+        xs, ys, ids_source = next(self.iter_source)
+        xt, _, _ = next(self.iter_target)
         xs, xt, ys = xs.cuda(), xt.cuda(), ys.cuda()
 
         _, outputs_source = self.base_network(xs)
