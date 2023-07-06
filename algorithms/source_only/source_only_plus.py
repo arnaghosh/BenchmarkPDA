@@ -25,7 +25,8 @@ class SourceOnlyPlus(Algorithm):
         Computes the loss and performs one update step.
         """
         self.base_network.train(True)
-        xs, ys = self.iter_source.next()
+        # xs, ys = self.iter_source.next()
+        xs, ys = next(self.iter_source)
         xs, ys = xs.cuda(), ys.cuda()
 
         g_xs, f_g_xs = self.base_network(xs)

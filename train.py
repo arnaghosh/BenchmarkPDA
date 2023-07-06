@@ -1,6 +1,7 @@
 import os, random, argparse
 import numpy as np
 import torch
+from tqdm import tqdm
 from utils.logger import *
 from utils.model_selection import *
 
@@ -53,7 +54,7 @@ def train(algorithm):
         gamma_acc = []
 
     log_file.write("Started Training")
-    for i in range(algorithm.train_hp['max_iterations'] + 1):
+    for i in tqdm(range(algorithm.train_hp['max_iterations'] + 1)):
         if (i % algorithm.train_hp['test_interval'] == 0 and i > 0) or (i == algorithm.train_hp['max_iterations']):
             if algorithm.dset_hp['use_val']:
                 s_features, s_logits, s_labels = get_data(algorithm.dset_loaders['source_train'], algorithm.base_network)

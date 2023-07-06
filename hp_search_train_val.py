@@ -85,3 +85,8 @@ for hp_params in itertools.product(*[iter(search_space[key]) for key in search_s
         os.makedirs(logger_hp['output_dir'], exist_ok=True)
         algorithm = algorithms_dict[args.method](dset_hp, loss_hp, train_hp, net_hp, logger_hp)
         train(algorithm)
+    # if os.path.exists(logger_hp['output_dir']):
+    #     print("WARNING!! OVERWRITING EXISTING LOGS!!")
+    # os.makedirs(logger_hp['output_dir'], exist_ok=True)
+    # algorithm = algorithms_dict[args.method](dset_hp, loss_hp, train_hp, net_hp, logger_hp)
+    # train(algorithm)

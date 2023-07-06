@@ -17,7 +17,8 @@ def image_classification(loader, model):
     with torch.no_grad():
         iter_test = iter(loader)
         for i in range(len(loader)):
-            data = iter_test.next()
+            # data = iter_test.next()
+            data = next(iter_test)
             inputs = data[0]
             labels = data[1]
             inputs = inputs.cuda()
@@ -45,7 +46,8 @@ def get_acc_10crop(loaders: dict, model):
     with torch.no_grad():
         iter_test = [iter(loaders[i]) for i in range(10)]
         for i in range(len(loaders[0])):
-            data = [iter_test[j].next() for j in range(10)]
+            # data = [iter_test[j].next() for j in range(10)]
+            data = [next(iter_test[j]) for j in range(10)]
             inputs = [data[j][0].cuda() for j in range(10)]
             labels = data[0][1]
             softmaxes = []
@@ -72,7 +74,8 @@ def get_data(loader, model):
     with torch.no_grad():
         iter_test = iter(loader)
         for i in range(len(loader)):
-            data = iter_test.next()
+            # data = iter_test.next()
+            data = next(iter_test)
             inputs = data[0]
             labels = data[1]
             inputs = inputs.cuda()
@@ -95,7 +98,8 @@ def get_data_limited(loader, model, limit=3000):
     with torch.no_grad():
         iter_test = iter(loader)
         for i in range(len(loader)):
-            data = iter_test.next()
+            # data = iter_test.next()
+            data = next(iter_test)
             inputs = data[0]
             labels = data[1]
             inputs = inputs.cuda()
