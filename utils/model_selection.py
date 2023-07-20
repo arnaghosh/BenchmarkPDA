@@ -92,6 +92,33 @@ def get_data(loader, model):
     return all_features, all_logits, all_labels
 
 
+def get_data_features(loader, model):
+    model.train(False)
+    start_test = True
+    with torch.no_grad():
+        iter_test = iter(loader)
+        for i in range(len(loader)):
+            # data = iter_test.next()
+            data = next(iter_test)
+            inputs = data[0]
+            labels = data[1]
+            inputs = inputs.cuda()
+            features, bottleneck_out, logits = model(inputs, get_feats=True)
+            if start_test:
+                all_logits = logits.float().cpu()
+                all_features = features.float().cpu()
+                all_bottleneck_outs = bottleneck_out.float().cpu()
+                all_labels = labels.float()
+                start_test = False
+            else:
+                all_features = torch.cat((all_features, features.float().cpu()), 0)
+                all_bottleneck_outs = torch.cat((all_bottleneck_outs, 
+                                                 bottleneck_out.float().cpu()), 0)
+                all_logits = torch.cat((all_logits, logits.float().cpu()), 0)
+                all_labels = torch.cat((all_labels, labels.float()), 0)    
+    return all_features, all_bottleneck_outs, all_logits, all_labels
+
+
 def get_data_limited(loader, model, limit=3000):
     model.train(False)
     start_test = True
