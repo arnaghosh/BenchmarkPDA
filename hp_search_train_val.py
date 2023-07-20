@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import torch
 from train import train # Training script
+from alpha_eval import eval
 from algorithms import algorithms_dict # Dictionary of methods available
 from utils.network import net_dict # Dictionary of pre-trained models available
 from utils.hp_functions import * # Helper functions to load default hyper-parameters
@@ -39,6 +40,10 @@ parser.add_argument('--seed', type=int,
 parser.add_argument('--sweep_idx', type=int, 
                     default=0,
                     help="Index of hparam sweep")
+parser.add_argument('--mode', type=str, 
+                    default='train',
+                    help="Flag to run training or evaluation",
+                    choices=['train', 'eval'])
 
 args = parser.parse_args()
 # Adding SCRATCH dir to data and logs folder
@@ -71,33 +76,56 @@ search_space = get_search_space(args.method)
 
 train_hp = get_train_hp_search(args.method, dset_hp)
 train_hp['seed'] = args.seed
-for hidx, hp_params in enumerate(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])):
-    if hidx != args.sweep_idx: continue # running one hparam at a time :)
-    if args.method == 'ar':
-        if hp_params[1] != -hp_params[2]: # restricts up == -low
-            continue
-    for ix, key in enumerate(search_space.keys()):
-        loss_hp[key] = hp_params[ix]
+if args.mode == 'train':
+    for hidx, hp_params in enumerate(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])):
+        if hidx != args.sweep_idx: continue # running one hparam at a time :)
+        if args.method == 'ar':
+            if hp_params[1] != -hp_params[2]: # restricts up == -low
+                continue
+        for ix, key in enumerate(search_space.keys()):
+            loss_hp[key] = hp_params[ix]
 
-    # Set randoms seed for reproducibility
-    set_seeds(train_hp['seed'])
+        # Set randoms seed for reproducibility
+        set_seeds(train_hp['seed'])
 
-    # Find output_dir
-    output_dir = os.path.join(args.logs_folder, args.method, net_hp['net'], dset_hp['name'], dset_hp['task'])     
-    for ix, key in enumerate(search_space.keys()):
-        output_dir = os.path.join(output_dir, f'{key}_{hp_params[ix]}')
-    logger_hp['output_dir'] = os.path.join(output_dir, f"seed_{train_hp['seed']}", 'run_0')
-    
-    # Train with specified hyper-parameters
-    if not os.path.exists(logger_hp['output_dir']):
-        print(f"Running hparam config {args.sweep_idx}")
-        os.makedirs(logger_hp['output_dir'], exist_ok=True)
+        # Find output_dir
+        output_dir = os.path.join(args.logs_folder, args.method, net_hp['net'], dset_hp['name'], dset_hp['task'])     
+        for ix, key in enumerate(search_space.keys()):
+            output_dir = os.path.join(output_dir, f'{key}_{hp_params[ix]}')
+        logger_hp['output_dir'] = os.path.join(output_dir, f"seed_{train_hp['seed']}", 'run_0')
+        
+        # Train with specified hyper-parameters
+        if not os.path.exists(logger_hp['output_dir']):
+            print(f"Running hparam config {args.sweep_idx}")
+            os.makedirs(logger_hp['output_dir'], exist_ok=True)
+            algorithm = algorithms_dict[args.method](dset_hp, loss_hp, train_hp, net_hp, logger_hp)
+            train(algorithm)
+        else:
+            print(f"Skipping hparam config {args.sweep_idx} because dir already exists")
+
+elif args.mode == 'eval':
+    tot_configs = len(list(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])))
+    for hidx, hp_params in enumerate(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])):
+        print(f"Running eval for hparam config {1+hidx}/{tot_configs}")
+        if args.method == 'ar':
+            if hp_params[1] != -hp_params[2]: # restricts up == -low
+                continue
+        for ix, key in enumerate(search_space.keys()):
+            loss_hp[key] = hp_params[ix]
+
+        # Set randoms seed for reproducibility
+        set_seeds(train_hp['seed'])
+
+        # Find output_dir
+        output_dir = os.path.join(args.logs_folder, args.method, net_hp['net'], dset_hp['name'], dset_hp['task'])     
+        for ix, key in enumerate(search_space.keys()):
+            output_dir = os.path.join(output_dir, f'{key}_{hp_params[ix]}')
+        logger_hp['output_dir'] = os.path.join(output_dir, f"seed_{train_hp['seed']}", 'run_0')
+
         algorithm = algorithms_dict[args.method](dset_hp, loss_hp, train_hp, net_hp, logger_hp)
-        train(algorithm)
-    else:
-        print(f"Skipping hparam config {args.sweep_idx} because dir already exists")
-    # if os.path.exists(logger_hp['output_dir']):
-    #     print("WARNING!! OVERWRITING EXISTING LOGS!!")
-    # os.makedirs(logger_hp['output_dir'], exist_ok=True)
-    # algorithm = algorithms_dict[args.method](dset_hp, loss_hp, train_hp, net_hp, logger_hp)
-    # train(algorithm)
+        algorithm.logger_hp['model_selection_metrics'] += ['alpha']
+        eval(algorithm)
+        print(f"Eval results saved to {algorithm.logger_hp['output_dir']}")
+
+else:
+    raise NotImplementedError
