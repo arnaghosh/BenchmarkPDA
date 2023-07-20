@@ -3,7 +3,7 @@
 #SBATCH --partition=long
 #SBATCH --gres=gpu:2g.20gb:1
 #SBATCH --mem=16GB
-#SBATCH --time=10:00:00
+#SBATCH --time=5:00:00
 #SBATCH --cpus-per-gpu=4
 #SBATCH --output=sbatch_out/alpha_eval.%A.%a.out
 #SBATCH --error=sbatch_err/alpha_eval.%A.%a.err
@@ -12,6 +12,11 @@
 . /etc/profile
 module load anaconda/3
 conda activate ffcv
+
+if [[ "$CUDA_VISIBLE_DEVICES" == *"MIG"* ]] 
+then 
+    unset CUDA_VISIBLE_DEVICES
+fi
 
 methods=('ar' 'ba3us' 'jumbot' 'mpot' 'pada')
 
