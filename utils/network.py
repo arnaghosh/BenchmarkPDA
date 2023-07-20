@@ -98,7 +98,9 @@ class BaseNetwork(nn.Module):
                 self.fc.apply(init_weights)
             self.__in_features = in_features
 
-    def forward(self, x):
+    def forward(self, x, get_feats=False):
+        if get_feats:
+            return self.forward_with_features(x)
         x = self.feature_layers(x)
         x = x.view(x.size(0), -1)
         if self.use_bottleneck:
@@ -127,6 +129,18 @@ class BaseNetwork(nn.Module):
                 parameter_list = [{"params":self.feature_layers.parameters(), "lr_mult":1, 'decay_mult':2}, \
                                 {"params":self.fc.parameters(), "lr_mult":10, 'decay_mult':2}]
         return parameter_list
+    
+    def forward_with_features(self, x):
+        feats = self.feature_layers(x)
+        feats = feats.view(feats.size(0), -1)
+        if self.use_bottleneck:
+            x = self.bottleneck(feats)
+        else:
+            x = feats
+        if self.use_slr or self.radius>0:
+            x = self.radius*F.normalize(x, dim=1)
+        y = self.fc(x)
+        return feats, x, y
 
 
 # Network Architecture used in the SAFN. The bottleneck layer is nonlinear with dropout
