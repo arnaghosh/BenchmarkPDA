@@ -15,5 +15,5 @@ module load anaconda/3
 conda activate ffcv_eg
 
 python hp_search_train_val.py --method ar --dset office-home \
-                            --source_domain Art --target_domain Real_World --data_folder /network/scratch/r/roy.eyono/DomainAdaptation/datasets \
+                            --source_domain Art --target_domain Real_World --data_folder $SCRATCH/DomainAdaptation/datasets \
                             --sweep_idx $SLURM_ARRAY_TASK_ID
