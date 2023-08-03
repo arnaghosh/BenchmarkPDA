@@ -12,8 +12,19 @@
 . /etc/profile
 module unload python
 module load anaconda/3
-conda activate ffcv_eg
+if [ $USER == 'roy.eyono' ]
+then
+    conda activate ffcv_eg
+    target=Real_World
+elif [ $USER == 'ghosharn' ]
+then
+    conda activate ffcv_new
+    target=Clipart
+else
+    conda activate ffcv
+fi
 
 python hp_search_train_val.py --method pada --dset office-home \
-                            --source_domain Art --target_domain Real_World --data_folder $SCRATCH/DomainAdaptation/datasets \
+                            --source_domain Art --target_domain $target \
+                            --data_folder $SCRATCH/DomainAdaptation/datasets \
                             --sweep_idx $SLURM_ARRAY_TASK_ID
