@@ -106,7 +106,8 @@ if args.mode == 'train':
 elif args.mode == 'eval':
     tot_configs = len(list(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])))
     for hidx, hp_params in enumerate(itertools.product(*[iter(search_space[key]) for key in search_space.keys()])):
-        print(f"Running eval for hparam config {1+hidx}/{tot_configs}")
+        if hidx != args.sweep_idx: continue # running one hparam at a time :)
+        print(f"Running eval for hparam config {1+hidx}/{tot_configs}, for method {args.method}")
         if args.method == 'ar':
             if hp_params[1] != -hp_params[2]: # restricts up == -low
                 continue

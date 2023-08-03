@@ -10,9 +10,10 @@
 #SBATCH --job-name=pada
 
 . /etc/profile
+module unload python
 module load anaconda/3
-conda activate ffcv
+conda activate ffcv_eg
 
 python hp_search_train_val.py --method pada --dset office-home \
-                            --source_domain Art --target_domain Clipart \
+                            --source_domain Art --target_domain Real_World --data_folder /network/scratch/r/roy.eyono/DomainAdaptation/datasets \
                             --sweep_idx $SLURM_ARRAY_TASK_ID
