@@ -5,7 +5,7 @@ from tqdm import tqdm
 from utils.hp_functions import *
 from algorithms import algorithms_dict # Dictionary of methods available
 from utils.network import net_dict # Dictionary of pre-trained models available
-import now
+from datetime import datetime
 
 parser = argparse.ArgumentParser(description='Partial Domain Adaptation')
 parser.add_argument('--data_folder', type=str,
@@ -99,5 +99,6 @@ for method in tqdm(methods):
         }
         
 breakpoint()
+now = datetime.now()
 fname = f'result_collated_{now.strftime("%d-%m-%Y_%H-%M-%S")}.npy'
 np.save(fname,res_dict,allow_pickle=True)
