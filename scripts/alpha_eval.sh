@@ -34,7 +34,7 @@ idxs=(0 0 0 50 100 0 50 100 150 200 0)
 start_idx=${idxs[SLURM_ARRAY_TASK_ID]}
 end_idx=$((50+start_idx))
 
-for ((i=$start_idx; i<=$end_idx; i++))
+for ((i=$start_idx; i<$end_idx; i++))
 do
     python hp_search_train_val.py --method ${methods[SLURM_ARRAY_TASK_ID]} \
                                 --mode 'eval' --dset office-home \
