@@ -98,7 +98,7 @@ for method in tqdm(methods):
                        },
         }
         
-breakpoint()
+# breakpoint()
 now = datetime.now()
 fname = f'result_collated_{now.strftime("%d-%m-%Y_%H-%M-%S")}.npy'
 np.save(fname,res_dict,allow_pickle=True)

@@ -3,7 +3,7 @@
 #SBATCH --partition=long
 #SBATCH --gres=gpu:rtx8000:1
 #SBATCH --mem=10GB
-#SBATCH --time=1:00:00
+#SBATCH --time=2:30:00
 #SBATCH --cpus-per-gpu=4
 #SBATCH --output=sbatch_out/pada.%A.%a.out
 #SBATCH --error=sbatch_err/pada.%A.%a.err
@@ -26,5 +26,4 @@ fi
 
 python hp_search_train_val.py --method pada --dset office-home \
                             --source_domain Art --target_domain $target \
-                            --data_folder $SCRATCH/DomainAdaptation/datasets \
                             --sweep_idx $SLURM_ARRAY_TASK_ID

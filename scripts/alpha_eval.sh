@@ -10,6 +10,7 @@
 #SBATCH --job-name=alpha_eval
 
 . /etc/profile
+module unload python
 module load anaconda/3
 if [ $USER == 'roy.eyono' ]
 then
